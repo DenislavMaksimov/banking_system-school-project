@@ -1,9 +1,8 @@
 #include "Account.h"
 
-#include "../utils/FileExporter.h"
-#include "Client.h"
 #include "Transaction.h"
 
+#include <fstream>
 #include <iomanip>
 #include <iostream> 
 
@@ -147,7 +146,25 @@ void Account::getHistory() const {
 }
 
 bool Account::exportHistory(const string& fileName) const {
-    return FileExporter::exportAccountHistory(*this, fileName);
+    ofstream file(fileName);
+    if (!file) {
+        cout << "Error: Could not open file for writing.\n";
+        return false;
+    }
+
+    file << "Transaction history for account " << id << " (" << getType() << ")\n";
+    file << "Current balance: " << fixed << setprecision(2) << balance << "\n\n";
+
+    if (transactions.empty()) {
+        file << "No transactions.\n";
+    } else {
+        for (const Transaction* transaction : transactions) {
+            file << transaction->toFileString() << '\n';
+        }
+    }
+
+    cout << "History exported to " << fileName << '\n';
+    return true;
 }
 
 const string& Account::getId() const {
